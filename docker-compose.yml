@@ -11,8 +11,10 @@ services:
       - ./logs:/app/logs
       - ./runtime:/app/runtime
     depends_on:
-      - mysql
-      - redis
+      mysql: # 修改 depends_on 结构
+        condition: service_healthy # 等待 mysql 服务健康
+      redis: # 也可以为 redis 添加 healthcheck 并等待
+        condition: service_started # 或者至少等待 redis 容器启动 (如果 redis 启动很快)
     networks:
       - epusdt_net
 
@@ -25,7 +27,7 @@ services:
       MYSQL_USER: epusdt
       MYSQL_PASSWORD: epusdtpassword
       TZ: Asia/Shanghai  # 添加时区配置
-    command: 
+    command:
       - --wait_timeout=28800
       - --interactive_timeout=28800
     volumes:
@@ -35,6 +37,12 @@ services:
       - "3306:3306"
     networks:
       - epusdt_net
+    healthcheck: # 添加 MySQL 健康检查
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"] # 使用环境变量
+      interval: 10s # 每 10 秒检查一次
+      timeout: 5s   # 每次检查超时时间 5 秒
+      retries: 5    # 重试 5 次失败后标记为不健康
+      start_period: 30s # 启动后等待 30 秒再开始检查 (给初始化留时间)
 
   redis:
     image: redis:alpine
@@ -45,10 +53,15 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    # Use the actual password string directly in the command
     command: redis-server --requirepass liuchen123
     networks:
       - epusdt_net
+    # 可以选择性地为 Redis 也添加 healthcheck
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "-a", "liuchen123", "ping"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
 
 volumes:
   mysql_data:
