@@ -57,3 +57,4 @@ volumes:
 networks:
   epusdt_net:
     driver: bridge
+    name: epusdt_net  # 添加这一行来固定网络名称
