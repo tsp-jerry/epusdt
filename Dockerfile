@@ -11,7 +11,8 @@ RUN apt-get update && \
 COPY . .
 
 # 下载并解压epusdt
-RUN chmod +x epusdt
+RUN chmod +x epusdt &&\
+ls -la
 
 # 暴露端口
 EXPOSE 8000
