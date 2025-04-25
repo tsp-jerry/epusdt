@@ -38,7 +38,8 @@ services:
     networks:
       - epusdt_net
     healthcheck: # 添加 MySQL 健康检查
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"] # 使用环境变量
+      # 使用 CMD-SHELL 来允许 shell 变量扩展
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s # 每 10 秒检查一次
       timeout: 5s   # 每次检查超时时间 5 秒
       retries: 5    # 重试 5 次失败后标记为不健康
