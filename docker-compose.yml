@@ -13,6 +13,8 @@ services:
     depends_on:
       - mysql
       - redis
+    networks:
+      - epusdt_net
 
   mysql:
     image: mysql:5.7
@@ -22,11 +24,17 @@ services:
       MYSQL_DATABASE: epusdt
       MYSQL_USER: epusdt
       MYSQL_PASSWORD: epusdtpassword
+      TZ: Asia/Shanghai  # 添加时区配置
+    command: 
+      - --wait_timeout=28800
+      - --interactive_timeout=28800
     volumes:
       - ./sql/epusdt.sql:/docker-entrypoint-initdb.d/epusdt.sql
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - epusdt_net
 
   redis:
     image: redis:alpine
@@ -37,7 +45,13 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - epusdt_net
 
 volumes:
   mysql_data:
   redis_data:
+
+networks:
+  epusdt_net:
+    driver: bridge
